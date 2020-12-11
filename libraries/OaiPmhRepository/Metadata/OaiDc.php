@@ -115,6 +115,16 @@ class OaiPmhRepository_Metadata_OaiDc implements OaiPmhRepository_Metadata_Forma
                     }
                 }
             }
+            // JBH 2020-09-25 - Use document type mapping
+            if($elementName == 'relation')
+            {
+              $files = $item->getFiles();
+              foreach($files as $file)
+              {
+                  $oai_dc->appendNewElement(// Added the thumbnail according to the BNF specification
+                      'dc:relation', "vignette : " . $file->getWebPath('thumbnail'));
+              }
+            }
         }
     }
 }
