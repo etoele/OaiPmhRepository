@@ -81,3 +81,18 @@ $view = get_view();
             array('checked' => (boolean) get_option('oaipmh_repository_expose_item_type'))); ?>
     </div>
 </div>
+<!-- JBH 2020-12-11 - ability to use Item Types as sets - start -->
+<div class="field">
+    <div class="two columns alpha">
+        <?php echo $view->formLabel('oaipmh_repository_expose_item_types_as_sets',
+            __('Use Item Types as Sets')); ?>
+    </div>
+    <div class="inputs five columns omega">
+        <p class="explanation">
+            <?php echo __('Whether the plugin should use the Use Types as set Ids.'); ?>
+        </p>
+        <?php echo $view->formCheckbox('oaipmh_repository_expose_item_types_as_sets', true,
+            array('checked' => (boolean) get_option('oaipmh_repository_expose_item_types_as_sets'))); ?>
+    </div>
+</div>
+<!-- JBH 2020-12-11 - ability to use Item Types as sets - end -->

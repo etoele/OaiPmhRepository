@@ -318,6 +318,16 @@ class OaiPmhRepository_ResponseGenerator extends OaiPmhRepository_OaiXmlGenerato
             $collections = get_db()->getTable('Collection')
                 ->findBy(array('public' => '1'));
         }
+        // JBH 2020-12-11 - ability to use Item Types as sets - start
+        elseif ((boolean) get_option('oaipmh_repository_expose_item_types_as_sets')) {
+          $select = new Omeka_Db_Select();
+          $select
+              ->from(array('item_types' => $db->ItemTypes))
+              ->joinInner(array('items' => $db->Item), 'item_types.id = items.item_type_id', array())
+              ->where('items.public = 1')
+              ->group('item_types.id');
+          $collections = get_db()->getTable('ItemType')->fetchObjects($select);
+        }// JBH 2020-12-11 - ability to use Item Types as sets - end
         else {
             $select = new Omeka_Db_Select();
             $select
@@ -336,6 +346,45 @@ class OaiPmhRepository_ResponseGenerator extends OaiPmhRepository_OaiXmlGenerato
 
         if(!$this->error) {
             $this->document->documentElement->appendChild($listSets); 
+          // JBH 2020-12-11 - ability to use Item Types as sets - start
+          if ((boolean) get_option('oaipmh_repository_expose_item_types_as_sets')) {
+            $this->document->documentElement->appendChild($listSets);
+            foreach ($collections as $collection) {
+                $name = $collection->name;
+                /*
+                  les livres imprimés vont dans monographies
+                  Cartes et plans dans cartes
+                  manuscrit dans manuscrits
+                  presse dans périodiques
+                  et le reste dans images
+                */
+                $description = "images";
+                switch ($name) {
+                  case "Livres imprimés":
+                    $description = "monographies";
+                    break;
+                  case "cartes et plans":
+                    $description = "cartes";
+                    break;
+                  case "Livres manuscrits":
+                    $description = "manuscrits";
+                    break;
+                  case "Presse":
+                    $description = "periodiques";
+                    break;
+                }
+                $elements = array(
+                    'setSpec' => $collection->id,
+                    'setName' => $name,
+                    'setDescription' => $description,
+                );
+                $set = $listSets->appendNewElementWithChildren('set', $elements);
+                //$this->_addSetDescription($set, $collection);
+            }
+          }
+          else {
+            // JBH 2020-12-11 - ability to use Item Types as sets - end
+            $this->document->documentElement->appendChild($listSets);
             foreach ($collections as $collection) {
                 $name = metadata($collection, array('Dublin Core', 'Title')) ?: __('[Untitled]');
                 $elements = array(
@@ -345,6 +394,7 @@ class OaiPmhRepository_ResponseGenerator extends OaiPmhRepository_OaiXmlGenerato
                 $set = $listSets->appendNewElementWithChildren('set', $elements);
                 $this->_addSetDescription($set, $collection);
             }
+          } // JBH 2020-12-11 - ability to use Item Types as sets
         }
     }
 
@@ -484,8 +534,16 @@ class OaiPmhRepository_ResponseGenerator extends OaiPmhRepository_OaiXmlGenerato
         $select = $itemTable->getSelect();
         $alias = $itemTable->getTableAlias();
         $itemTable->filterByPublic($select, true);
+        // JBH - filter OAI Imported items (Identifier != "")
+        //$itemTable->filterByIdentifier($select, $set);
         if($set)
             $itemTable->filterByCollection($select, $set);
+            // JBH 2020-12-11 - ability to use Item Types as sets - start
+            if ((boolean) get_option('oaipmh_repository_expose_item_types_as_sets')) {
+              $itemTable->filterByItemType($select, $set);
+            } else { // JBH 2020-12-11 - ability to use Item Types as sets - end
+              $itemTable->filterByCollection($select, $set);
+            } // JBH 2020-12-11 - ability to use Item Types as sets
 
         $modifiedClause = $addedClause = '';
         if($from) {
@@ -508,6 +566,13 @@ class OaiPmhRepository_ResponseGenerator extends OaiPmhRepository_OaiXmlGenerato
             $select->where("($modifiedClause) OR ($addedClause)");
         }
         
+
+        // JBH - filter OAI Imported items (Identifier != "")
+        $filterClause = "$alias.id not in (SELECT item_id from omeka_oaipmh_harvester_records)";
+        $select->where($filterClause);
+        $filterClause = "$alias.id not in (SELECT record_id from omeka_element_texts INNER JOIN omeka_elements ON omeka_element_texts.element_id = omeka_elements.id AND omeka_elements.name = 'identifier')";
+        $select->where($filterClause);
+
         // Total number of rows that would be returned
         $rows = $select->query()->rowCount();
         // This limit call will form the basis of the flow control

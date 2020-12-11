@@ -62,6 +62,34 @@ class OaiPmhRepository_Metadata_OaiDc implements OaiPmhRepository_Metadata_Forma
             $dcElements = $item->getElementTexts(
                 'Dublin Core',$upperName );
 
+            // JBH 2020-02-28 - Use document type mapping
+            if ($elementName == 'type' && !get_option('oaipmh_repository_expose_item_type')) {
+                /*
+                  les livres imprimés vont dans monographies
+                  Cartes et plans dans cartes
+                  manuscrit dans manuscrits
+                  presse dans périodiques
+                  et le reste dans images
+                */
+                $dcType = $item->getProperty('item_type_name');
+                $gaType = "images";
+                switch ($dcType) {
+                  case "Livres imprimés":
+                    $gaType = "monographies";
+                    break;
+                  case "cartes et plans":
+                    $gaType = "cartes";
+                    break;
+                  case "Livres manuscrits":
+                    $gaType = "manuscrits";
+                    break;
+                  case "Presse":
+                    $gaType = "periodiques";
+                    break;
+                }
+                $oai_dc->appendNewElement('dc:type', $gaType);
+            }
+
             // Prepend the item type, if any.
             if ($elementName == 'type' && get_option('oaipmh_repository_expose_item_type')) {
                 if ($dcType = $item->getProperty('item_type_name')) {

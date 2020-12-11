@@ -33,6 +33,7 @@ class OaiPmhRepositoryPlugin extends Omeka_Plugin_AbstractPlugin
         'oaipmh_repository_expose_files' => 1,
         'oaipmh_repository_expose_empty_collections' => 1,
         'oaipmh_repository_expose_item_type' => 0,
+        'oaipmh_repository_expose_item_types_as_sets' => 0, // JBH 2020-12-11 - ability to use Item Types as sets - start
     );
     
     /**
