@@ -17,18 +17,18 @@ class OaiPmhRepository_Metadata_OaiDc implements OaiPmhRepository_Metadata_Forma
 {
     /** OAI-PMH metadata prefix */
     const METADATA_PREFIX = 'oai_dc';
-    
+
     /** XML namespace for output format */
     const METADATA_NAMESPACE = 'http://www.openarchives.org/OAI/2.0/oai_dc/';
-    
+
     /** XML schema for output format */
     const METADATA_SCHEMA = 'http://www.openarchives.org/OAI/2.0/oai_dc.xsd';
-    
+
     /** XML namespace for unqualified Dublin Core */
     const DC_NAMESPACE_URI = 'http://purl.org/dc/elements/1.1/';
-    
+
     /**
-     * Appends Dublin Core metadata. 
+     * Appends Dublin Core metadata.
      *
      * Appends a metadata element, an child element with the required format,
      * and further children for each of the Dublin Core fields present in the
@@ -57,7 +57,7 @@ class OaiPmhRepository_Metadata_OaiDc implements OaiPmhRepository_Metadata_Forma
          * compliant per-node declarations.
          */
         foreach($dcElementNames as $elementName)
-        {   
+        {
             $upperName = Inflector::camelize($elementName);
             $dcElements = $item->getElementTexts(
                 'Dublin Core',$upperName );
@@ -102,14 +102,14 @@ class OaiPmhRepository_Metadata_OaiDc implements OaiPmhRepository_Metadata_Forma
                 $oai_dc->appendNewElement('dc:'.$elementName, $elementText->text);
             }
             // Append the browse URI to all results
-            if($elementName == 'identifier') 
+            if($elementName == 'identifier')
             {
                 $oai_dc->appendNewElement('dc:identifier', record_url($item, 'show', true));
-                
+
                 // Also append an identifier for each file
                 if(get_option('oaipmh_repository_expose_files')) {
                     $files = $item->getFiles();
-                    foreach($files as $file) 
+                    foreach($files as $file)
                     {
                         $oai_dc->appendNewElement('dc:identifier', $file->getWebPath('original'));
                     }
