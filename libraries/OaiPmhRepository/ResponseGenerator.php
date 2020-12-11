@@ -533,8 +533,7 @@ class OaiPmhRepository_ResponseGenerator extends OaiPmhRepository_OaiXmlGenerato
         $select = $itemTable->getSelect();
         $alias = $itemTable->getTableAlias();
         $itemTable->filterByPublic($select, true);
-        // JBH - filter OAI Imported items (Identifier != "")
-        //$itemTable->filterByIdentifier($select, $set);
+
         if($set)
             // JBH 2020-12-11 - ability to use Item Types as sets - start
             if ((boolean) get_option('oaipmh_repository_expose_item_types_as_sets')) {
