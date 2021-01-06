@@ -362,13 +362,18 @@ class OaiPmhRepository_ResponseGenerator extends OaiPmhRepository_OaiXmlGenerato
                   case "Livres imprimés":
                     $description = "monographies";
                     break;
-                  case "cartes et plans":
+                  case "Cartes et plans":
                     $description = "cartes";
                     break;
                   case "Livres manuscrits":
                     $description = "manuscrits";
                     break;
-                  case "Presse":
+                  case "Correspondances":
+                    $description = "manuscrits";
+                  case "Archives":
+                    $description = "manuscrits";
+                    break;
+                  case "Presse et revues":
                     $description = "periodiques";
                     break;
                 }
